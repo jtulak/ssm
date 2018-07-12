@@ -1,0 +1,53 @@
+language: python
+python:
+  - "2.7"
+  - "3.4"
+virtualenv:
+  system_site_packages: true
+
+addons:
+  apt:
+    packages:
+      - python-pwquality
+
+# To use Coverity scan:
+# 1) Fork ssm into your personal github account (no organisation).
+# 2) Connect this account to your coverity account (https://scan.coverity.com)
+#    and to travis-ci github integration (https://travis-ci.org/).
+# 3) In the fork: set up travis-ci.
+# 4) Add the fork into coverity account.
+# 5) When travis-ci is working (tests are passing), uncomment the following
+#    sections and replace the listed fields with values from coverity page
+#    (something like https://scan.coverity.com/projects/<your-account-project>/builds/new?tab=travis_ci)
+#    - global/secure
+#    - addons/coverity_scan/project/name
+#    - addons/coverity_scan/project/notification_email
+#    - addons/coverity_scan/project/branch_pattern (use a branch from your fork)
+# 6) Coverity should run every time you run travis-ci hook.
+# Note, if coverity is refusing access, claiming you should check $PROJECT_NAME
+# and your token, go to your coverity project page and generate a new token
+# first, then replace the global/secure with the new ENCRYPTED token.
+
+
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+    - secure: "SeP/k7EMXilr7OXGfxDb7OywLjfLnAy01UVEVb8di6bxBkX81YHkSB0XZQoOHf0pWmodoaP8ChSMYwawTUqbyux3x81Yys7D02mhkR8ZYwEY4nnGGGX5KMpAA4DgVYAA41ByJOFKofVuBdhqytFXd7kqoIAPZZJOvMtp0gAel6Lyn55dIB3t36+CMUzToyL1S03hnowYAf5ujFNuql5187ybKwkUJTGEinCYTe0woIBqmy0Y0yFWNYyOzs5PimBqsYjishaSzEGbgUfHDBZhB/olCu8XHRXp4GoH4NSC+J83qZBywx5y3eua1Y/saSFkpFE9sCRgpeOSDkzCTaCUnzp5zvUbXfwSPWIrJ7AFk0UQSbAnCyR2vCDDJZ+zaM0tku6uP8sD/VOkGT9AYnGKNnX24Nwt181KE/gtlTfQT78CsUhMBRIJXO0XwQxy7WVehhws9IKXhXK/Ari9PAIz/Qw8G8Tr1u09XcBlW0Nt/YSoJLFBrRm7tcj/JoQBStqBp3UZ94wzW28ExNlB44JpvERrUKyDjXxzssc9FXICTMOBl5ZHohiKlYb9ODzFwWL4vMKxgTAqL6aKT8Ir58TDzu78XD6//mMVg127STKUvtZcUvJDBWhqocdW+FrZ5QSIJRt3y42yuhAtbXWHCLxoZPM/nfV5sz7qPImBKCQctFQ="
+
+
+before_install:
+  - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+
+addons:
+  coverity_scan:
+    project:
+      name: "jtulak/ssm-coverity"
+      description: "A single tool to manage your storage."
+    notification_email: jtulak@redhat.com
+    build_command_prepend: ""
+    build_command: "cov-build --dir cov-int --no-command --fs-capture-search ./"
+    branch_pattern: cov-scan
+
+script:
+  - sudo python test.py --unit
