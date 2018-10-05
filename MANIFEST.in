@@ -1,4 +1,0 @@
-include bin/ssm.local
-include test.py
-include Makefile
-recursive-include tests *.py *.sh
